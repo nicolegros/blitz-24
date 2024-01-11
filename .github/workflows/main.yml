@@ -42,4 +42,4 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         tag: "v${{ steps.new-version.outputs.TAG_NAME }}"
-        artifacts: "v${{ steps.new-version.outputs.TAG_NAME }}.zip"
+        # artifacts: "v${{ steps.new-version.outputs.TAG_NAME }}.zip"
