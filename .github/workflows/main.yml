@@ -31,8 +31,15 @@ jobs:
         contents: |
           "v${{ steps.new-version.outputs.TAG_NAME }}"
         write-mode: overwrite
+    - name: Commit & Push
+      uses: Andro999b/push@v1.3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
+        force: true
+        message: ':bookmark: v${{ steps.new-version.outputs.TAG_NAME }}'
     - name: Release
       uses: ncipollo/release-action@v1
       with:
-        tag: "${{ steps.new-version.outputs.TAG_NAME }}"
-        artifacts: "${{ steps.new-version.outputs.TAG_NAME }}.zip"
+        tag: "v${{ steps.new-version.outputs.TAG_NAME }}"
+        artifacts: "v${{ steps.new-version.outputs.TAG_NAME }}.zip"
