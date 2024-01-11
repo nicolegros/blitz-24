@@ -32,7 +32,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: main
         force: true
-        message: ':bookmark: v${{ steps.new-version.outputs.TAG_NAME }}'
+        message: ':bookmark: Incremented version to `v${{ steps.new-version.outputs.TAG_NAME }}`'
     - name: Release
       uses: ncipollo/release-action@v1
       with:
