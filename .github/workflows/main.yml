@@ -23,7 +23,7 @@ jobs:
       run: echo "${{ steps.version.outputs.content }}"
     - name: Calculate version
       id: new-version
-      run: echo "TAG_NAME=$(echo $(($(cat ./version.txt | grep -E '[0-9]') + 1)))" >> $GITHUB_OUTPUT
+      run: echo "TAG_NAME=$(echo $(($(cat ./version.txt | grep -oE '[0-9]') + 1)))" >> $GITHUB_OUTPUT
     - name: Change version
       run: echo v${{ steps.new-version.outputs.TAG_NAME }} > ./version.txt
     - name: Commit & Push
