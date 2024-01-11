@@ -19,10 +19,20 @@ jobs:
       uses: juliangruber/read-file-action@v1
       with:
         path: ./version.txt
-    - name: Echo package.json
+    - name: Echo version
       run: echo "${{ steps.version.outputs.content }}"
+    - name: Calculate version
+      id: new-version
+      run: echo "TAG_NAME=$($(($(cat ./version.txt | grep -E '[0-9]') + 1)))" >> $GITHUB_OUTPUT
+    - name: Change version
+      uses: DamianReeves/write-file-action@master
+      with:
+        path: ./version.txt
+        contents: |
+          "v${{ steps.new-version.outputs.TAG_NAME }}"
+        write-mode: overwrite
     - name: Release
       uses: ncipollo/release-action@v1
       with:
-        tag: "${{ steps.version.outputs.content }}"
-        artifacts: "${{ steps.version.outputs.content }}.zip"
+        tag: "${{ steps.version.outputs.TAG_NAME }}"
+        artifacts: "${{ steps.version.outputs.TAG_NAME }}.zip"
