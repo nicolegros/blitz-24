@@ -25,12 +25,7 @@ jobs:
       id: new-version
       run: echo "TAG_NAME=$(echo $(($(cat ./version.txt | grep -E '[0-9]') + 1)))" >> $GITHUB_OUTPUT
     - name: Change version
-      uses: DamianReeves/write-file-action@master
-      with:
-        path: ./version.txt
-        contents: |
-          "v${{ steps.new-version.outputs.TAG_NAME }}"
-        write-mode: overwrite
+      run: echo v${{ steps.new-version.outputs.TAG_NAME }} > ./version.txt
     - name: Commit & Push
       uses: Andro999b/push@v1.3
       with:
