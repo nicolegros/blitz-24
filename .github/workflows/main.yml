@@ -34,5 +34,5 @@ jobs:
     - name: Release
       uses: ncipollo/release-action@v1
       with:
-        tag: "${{ steps.version.outputs.TAG_NAME }}"
-        artifacts: "${{ steps.version.outputs.TAG_NAME }}.zip"
+        tag: "${{ steps.new-version.outputs.TAG_NAME }}"
+        artifacts: "${{ steps.new-version.outputs.TAG_NAME }}.zip"
