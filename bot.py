@@ -64,24 +64,17 @@ class Bot:
                           crewmate.currentStation is None and crewmate.destination is None and crewmate.id != shield_reparator_id]
 
         for crewmate in idle_crewmates:
-            if game_message.tick > 1:
-                if not self.crew_roles["radar"]:
-                    self.move_crew_to_type("radar", crewmate)
-                elif not self.crew_roles["helm"]:
-                    self.move_crew_to_type("helm", crewmate)
-                elif not self.crew_roles["shield"]:
-                    self.move_crew_to_type("shield", crewmate)
-                else:
-                    self.move_crew_to_type("turret", crewmate)
+            # if game_message.tick > 1:
+            if not self.crew_roles["radar"]:
+                self.move_crew_to_type("radar", crewmate)
+            if not self.crew_roles["helm"]:
+                self.move_crew_to_type("helm", crewmate)
+            # elif not self.crew_roles["shield"]:
+            #     self.move_crew_to_type("shield", crewmate)
             else:
                 self.move_crew_to_type("turret", crewmate)
-
-            # stations_in_order = [
-            #     [crewmate.distanceFromStations.helms, my_ship.stations.helms],
-            #     [crewmate.distanceFromStations.turrets, my_ship.stations.turrets],
-            #     [crewmate.distanceFromStations.radars, my_ship.stations.radars],
-            #     [crewmate.distanceFromStations.shields, my_ship.stations.shields],
-            # ]
+        # else:
+        #     self.move_crew_to_type("turret", crewmate)
 
 
         # Now crew members at stations should do something!
