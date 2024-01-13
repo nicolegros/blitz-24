@@ -12,7 +12,6 @@ class Bot:
         Here is where the magic happens, for now the moves are not very good. I bet you can do better ;)
         """
         actions = []
-
         team_id = game_message.currentTeamId
         my_ship = game_message.ships.get(team_id)
         other_ships_ids = [shipId for shipId in game_message.shipsPositions.keys() if shipId != team_id]

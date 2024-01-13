@@ -1,23 +1,45 @@
+import copy
+
 import numpy as np
 
-def get_position_for_collision(self, x0: float, cannon: Cannon, meteor: Meteor, in_time: float = 0,
-                               excess_trajectory=0):
-    theta = np.pi - np.arctan(np.abs(meteor.velocity.y / meteor.velocity.x)) * np.sign(meteor.velocity.y)
-    meteor_x = meteor.position.x + meteor.velocity.x * in_time + excess_trajectory * np.cos(theta)
-    meteor_y = meteor.position.y + meteor.velocity.y * in_time + excess_trajectory * np.sin(theta)
-    f_opt = lambda x: (cannon.position.x - meteor_x) * (
-            meteor.velocity.y - self.constants.rockets.speed * np.sin(x)) - \
-                      (cannon.position.y - meteor_y) * (
-                              meteor.velocity.x - self.constants.rockets.speed * np.cos(x))
+from game_message import Vector, Debris
 
-    root_0, _, ier, _ = fsolve(f_opt, np.array(x0), xtol=1e-9, full_output=True)
-    t = (cannon.position.y - meteor.position.y) / (
-            meteor.velocity.y - self.constants.rockets.speed * np.sin(root_0))
+def get_time_until_collision_from_center_of_debris(shipPosition: Vector, debris: Debris, shieldRadius):
+    debris_y = debris.position.y - shipPosition.y
+    debris_x = debris.position.x - shipPosition.x
+    a = debris.velocity.y**2 - debris.velocity.x**2
+    b = 2*(debris_y * debris.velocity.y - debris_x * debris.velocity.x)
+    c = debris_y**2 + debris_x**2 - shieldRadius**2
 
-    min_idx = np.argmin(t, axis=0)
-    angle = root_0[min_idx]
-    t = t[min_idx]
 
-    position = Vector(x=cannon.position.x + self.constants.rockets.speed * np.cos(angle) * t,
-                      y=cannon.position.y + self.constants.rockets.speed * np.sin(angle) * t)
-    return position, t, ier, angle / (2 * np.pi) * 360
+    interior_root = b**2 - 4 * a * c
+    if interior_root < 0:
+        return None, debris
+    else:
+        return min((-b + np.sqrt(interior_root))/(2*a), (-b - np.sqrt(interior_root))/(2*a)), debris
+
+def get_othogonal_max_radius_position(debris: Debris):
+    theta = np.pi - np.arctan(np.abs(debris.velocity.y / debris.velocity.x)) * np.sign(debris.velocity.y)
+    theta = theta - np.pi/2
+
+    x1 = debris.position.x + debris.radius * np.cos(theta)
+    y1 = debris.position.y + debris.radius * np.sin(theta)
+
+    x2 = debris.position.x - debris.radius * np.cos(theta)
+    y2 = debris.position.y - debris.radius * np.sin(theta)
+
+    debris1 = copy.copy(Debris)
+    debris2 = copy.copy(Debris)
+
+    debris1.velocity = Vector(x1, y1)
+    debris2.velocity = Vector(x2, y2)
+
+    return debris1, debris2
+
+
+
+
+
+
+
+
