@@ -86,27 +86,14 @@ class Bot:
 
         # Now crew members at stations should do something!
         operatedTurretStations = [station for station in my_ship.stations.turrets if station.operator is not None]
-        myship = self.get_my_ship(game_message)
-        if self.isdefense(game_message):
-            debrises, actualized_damaged = self.calculate_defense(game_message)
 
         for turret_station in operatedTurretStations:
-            # Defense
-            if self.isdefense(game_message) and actualized_damaged:
-                self.turrets.releaseall()
-                debris_to_shoot = debrises[np.argmax(np.array(actualized_damaged))]
-                position, _, _, _ = get_position_for_collision(game_message.constants.ship,
-                                                                      debris_to_shoot.position.x,
-                                                                      turret_station,
-                                                                      debris_to_shoot)
-            # Attack
-            else:
-                position = self.finder.find_enemy_position(game_message)
+            position = self.finder.find_enemy_position(game_message)
 
-            print(f"POS: {position}")
-            self.addaction(TurretShootAction(turret_station.id))
+            print(f"Shooting at: {position}")
             self.addaction(TurretLookAtAction(turret_station.id,
                                               position))
+            self.addaction(TurretShootAction(turret_station.id))
 
         operatedHelmStation = [station for station in my_ship.stations.helms if station.operator is not None]
         # if operatedHelmStation and not self.hasrotated:
@@ -145,8 +132,8 @@ class Bot:
 
     def isdefense(self, gamemessage) -> bool:
         myship = self.get_my_ship(gamemessage)
-        # return myship.currentShield < 0.25 * gamemessage.constants.ship.maxShield
-        return myship.currentShield < -1
+        return myship.currentShield < 0.25 * gamemessage.constants.ship.maxShield
+        # return myship.currentShield < -1
 
     def iscritical(self, gamemessage) -> bool:
         myship = self.get_my_ship(gamemessage)
