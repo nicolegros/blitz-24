@@ -35,12 +35,21 @@ class Bot:
         turrets_to_go = []
 
         for crewmate in idle_crewmates:
-            for stations_list in [
-                crewmate.distanceFromStations.turrets,
-                crewmate.distanceFromStations.radars,
-                crewmate.distanceFromStations.shields,
-                crewmate.distanceFromStations.helms
-            ]:
+            if self.isdefense(game_message):
+                stations_in_order = [
+                    crewmate.distanceFromStations.shields,
+                    crewmate.distanceFromStations.turrets,
+                    crewmate.distanceFromStations.radars,
+                    crewmate.distanceFromStations.helms
+                ]
+            else:
+                stations_in_order = [
+                    crewmate.distanceFromStations.turrets,
+                    crewmate.distanceFromStations.radars,
+                    crewmate.distanceFromStations.shields,
+                    crewmate.distanceFromStations.helms
+                ]
+            for stations_list in stations_in_order:
                 crew_stations = stations_list
                 unoccupied_ship_stations = [station.id for station in my_ship.stations.turrets if
                                             station.operator is None and station.id not in turrets_to_go]
@@ -55,14 +64,12 @@ class Bot:
         # Now crew members at stations should do something!
         operatedTurretStations = [station for station in my_ship.stations.turrets if station.operator is not None]
         myship = self.get_my_ship(game_message)
-        # isdefense = myship.currentShield < 0.25 * game_message.constants.ship.maxShield
-        isdefense = myship.currentShield < -1
-        if isdefense:
+        if self.isdefense(game_message):
             debrises, actualized_damaged = self.calculate_defense(game_message)
 
         for turret_station in operatedTurretStations:
             # Defense
-            if isdefense and actualized_damaged:
+            if self.isdefense(game_message) and actualized_damaged:
                 self.turrets.releaseall()
                 debris_to_shoot = debrises[np.argmax(np.array(actualized_damaged))]
                 position, _, _, _ = get_position_for_collision(game_message.constants.ship,
@@ -74,12 +81,9 @@ class Bot:
                 position = self.finder.find_enemy_position(game_message)
 
             print(f"POS: {position}")
-            if self.turrets.isready(turret_station.id):
-                self.addaction(TurretShootAction(turret_station.id))
-            else:
-                self.addaction(TurretLookAtAction(turret_station.id,
-                                                  position))
-                self.turrets.lockin(turret_station.id)
+            self.addaction(TurretShootAction(turret_station.id))
+            self.addaction(TurretLookAtAction(turret_station.id,
+                                              position))
 
         # operatedHelmStation = [station for station in my_ship.stations.helms if station.operator is not None]
         # if operatedHelmStation:
@@ -113,3 +117,8 @@ class Bot:
                 actualized_damaged.append(debris.damage * LMBDA ** time)
 
         return debrises, actualized_damaged
+
+    def isdefense(self, gamemessage) -> bool:
+        myship = self.get_my_ship(gamemessage)
+        # return myship.currentShield < 0.25 * gamemessage.constants.ship.maxShield
+        return myship.currentShield < -1
