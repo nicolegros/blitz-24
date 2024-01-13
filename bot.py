@@ -46,8 +46,9 @@ class Bot:
             shield_reparator = my_ship.crew[0]
             shield_reparator_id = shield_reparator.id
             shield = self.findshield(game_message)
-            self.addaction(CrewMoveAction(shield_reparator.id, shield.gridPosition))
-            self.turrets_to_go.append(shield.id)
+            if shield is not None:
+                self.addaction(CrewMoveAction(shield_reparator.id, shield.gridPosition))
+                self.turrets_to_go.append(shield.id)
 
         if self.iscritical(game_message):
             print("Damage critical: All to the shields!")
