@@ -65,18 +65,22 @@ class Bot:
                           crewmate.currentStation is None and crewmate.destination is None and crewmate.id != shield_reparator_id]
 
         for crewmate in idle_crewmates:
-            # if game_message.tick > 1:
-            if not self.crew_roles["radar"]:
-                self.move_crew_to_type("radar", crewmate)
-            if not self.crew_roles["helm"]:
-                self.move_crew_to_type("helm", crewmate)
-            # elif not self.crew_roles["shield"]:
-            #     self.move_crew_to_type("shield", crewmate)
-            else:
-                self.move_crew_to_type("turret", crewmate)
-        # else:
-        #     self.move_crew_to_type("turret", crewmate)
+            # if not self.crew_roles["radar"]:
+            #     self.move_crew_to_type("radar", crewmate)
+            # elif not self.crew_roles["helm"]:
+            #     self.move_crew_to_type("helm", crewmate)
+            # else:
+            #     self.move_crew_to_type("turret", crewmate)
+            self.move_crew_to_type("turret", crewmate) # To remove when rotation works
 
+        # if game_message.tick > 100:
+        #     radarman = list(filter(lambda crew: len(self.findshipradar(crew.currentStation)) > 0, my_ship.crew))
+        #     if len(radarman) > 0:
+        #         self.move_crew_to_type("turret", radarman[0])
+        #
+        #     capitan = list(filter(lambda crew: len(self.findshiphelm(crew.currentStation)) > 0, my_ship.crew))
+        #     if len(capitan) > 0:
+        #         self.move_crew_to_type("turret", capitan[0])
 
         # Now crew members at stations should do something!
         operatedTurretStations = [station for station in my_ship.stations.turrets if station.operator is not None]
@@ -136,12 +140,11 @@ class Bot:
     def findshield(self, gamemessage: GameMessage) -> Station | None:
         myship = self.get_my_ship(gamemessage)
         try:
-            selectedshield = list(filter(lambda shield: shield.id not in self.criticalshields, myship.stations.shields ))[0]
+            selectedshield = list(filter(lambda shield: shield.id not in self.criticalshields, myship.stations.shields))[0]
             return selectedshield
         except:
             print("No more shields")
             return None
-
 
     def getStationsOfType(self, stationType, gamemessage: GameMessage, crewmate: CrewMember) -> tuple[list[CrewDistance], list[Station]]:
         myship = self.get_my_ship(gamemessage)
@@ -176,3 +179,11 @@ class Bot:
     def findshipshield(self, stationid: str) -> list[Station]:
         ship = self.get_my_ship(self.gamemessage)
         return list(filter(lambda station: station.id == stationid, ship.stations.shields))
+
+    def findshipradar(self, stationid: str) -> list[Station]:
+        ship = self.get_my_ship(self.gamemessage)
+        return list(filter(lambda station: station.id == stationid, ship.stations.radars))
+
+    def findshiphelm(self, stationid: str) -> list[Station]:
+        ship = self.get_my_ship(self.gamemessage)
+        return list(filter(lambda station: station.id == stationid, ship.stations.helms))
