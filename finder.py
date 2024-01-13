@@ -22,7 +22,7 @@ class Finder:
         try:
             alive_ships: list[Ship] = list(filter(lambda ship: ship.currentHealth > 0, enemy_ships))
             alive_ships.sort(key=lambda ship: ship.currentHealth)
-            print(f"Alive ships health: {list(map(lambda ship: ship.currentHealth, alive_ships))}")
+            print(f"Alive ships health: {list(map(lambda ship: [ship.currentHealth, ship.worldPosition], alive_ships))}")
             return list(map(lambda ship: ship.worldPosition, alive_ships))
         except:
             self.logger.error("Failed to find enemies!")
