@@ -7,8 +7,8 @@ from game_message import Vector, Debris
 def get_time_until_collision_from_center_of_debris(shipPosition: Vector, debris: Debris, shieldRadius):
     debris_y = debris.position.y - shipPosition.y
     debris_x = debris.position.x - shipPosition.x
-    a = debris.velocity.y**2 - debris.velocity.x**2
-    b = 2*(debris_y * debris.velocity.y - debris_x * debris.velocity.x)
+    a = debris.velocity.y**2 + debris.velocity.x**2
+    b = 2*(debris_y * debris.velocity.y + debris_x * debris.velocity.x)
     c = debris_y**2 + debris_x**2 - shieldRadius**2
 
 
@@ -16,7 +16,16 @@ def get_time_until_collision_from_center_of_debris(shipPosition: Vector, debris:
     if interior_root < 0:
         return None, debris
     else:
-        return min((-b + np.sqrt(interior_root))/(2*a), (-b - np.sqrt(interior_root))/(2*a)), debris
+        add_time = (-b + np.sqrt(interior_root))/(2*a)
+        minus_time = (-b - np.sqrt(interior_root))/(2*a)
+
+        if add_time < 0:
+            return None, debris
+
+        if minus_time < 0:
+            return add_time, debris
+        else:
+            return min((-b + np.sqrt(interior_root))/(2*a), (-b - np.sqrt(interior_root))/(2*a)), debris
 
 def get_othogonal_max_radius_position(debris: Debris):
     theta = np.pi - np.arctan(np.abs(debris.velocity.y / debris.velocity.x)) * np.sign(debris.velocity.y)
