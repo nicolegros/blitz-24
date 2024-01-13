@@ -7,9 +7,12 @@ from game_message import GameMessage, Vector, Ship
 class Finder:
     def __init__(self):
         self.logger = logging.getLogger("Finder")
+        self.target = None
 
     def find_enemy_position(self, gamemessage: GameMessage) -> Vector:
         enemy_ships: list[Vector] = self.find_enemy_ships_with_radar(gamemessage)
+        if self.target:
+            return self.target
         if len(enemy_ships) < 1:
             enemy_ships = self.find_enemy_ships_without_radar(gamemessage)
             return enemy_ships[random.randrange(len(enemy_ships))]
@@ -23,7 +26,9 @@ class Finder:
             alive_ships: list[Ship] = list(filter(lambda ship: ship.currentHealth > 0, enemy_ships))
             alive_ships.sort(key=lambda ship: ship.currentHealth)
             print(f"Alive ships: {list(map(lambda ship: [ship.currentHealth, ship.worldPosition], alive_ships))}")
-            return list(map(lambda ship: ship.worldPosition, alive_ships))
+            l = list(map(lambda ship: ship.worldPosition, alive_ships))
+            self.target = l[0]
+            return l
         except:
             self.logger.error("Failed to find enemies!")
             return []
