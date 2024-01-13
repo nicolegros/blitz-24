@@ -31,6 +31,7 @@ class Bot:
         operatedTurretStations = [station for station in my_ship.stations.turrets if station.operator is not None]
         for turret_station in operatedTurretStations:
             position = self.finder.find_enemy_position(game_message)
+            print(f"POS: {position}")
             possible_actions = [
                 # Charge the turret.
                 TurretChargeAction(turret_station.id),
