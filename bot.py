@@ -27,6 +27,7 @@ class Bot:
         # Find who's not doing anything and try to give them a job?
         idle_crewmates = [crewmate for crewmate in my_ship.crew if
                           crewmate.currentStation is None and crewmate.destination is None]
+        turrets_to_go = []
 
         for crewmate in idle_crewmates:
             for stations_list in [
@@ -36,12 +37,13 @@ class Bot:
                 crewmate.distanceFromStations.helms
             ]:
                 crew_stations = stations_list
-                unoccupied_ship_stations = [station.id for station in my_ship.stations.turrets if station.operator is None]
+                unoccupied_ship_stations = [station.id for station in my_ship.stations.turrets if station.operator is None and station.id not in turrets_to_go]
                 l = list(filter(lambda turret: turret.stationId in unoccupied_ship_stations, crew_stations))
                 if len(l) < 1:
                     pass
                 else:
                     station_to_move_to = random.choice(l)
+                    turrets_to_go.append(station_to_move_to.stationId)
                     self.addaction(CrewMoveAction(crewmate.id, station_to_move_to.stationPosition))
 
         # Now crew members at stations should do something!
