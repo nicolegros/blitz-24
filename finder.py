@@ -4,11 +4,11 @@ from game_message import GameMessage, Vector, Ship
 class Finder:
     def find_enemy_position(self, gamemessage: GameMessage) -> Vector:
         enemy_ships = self.find_enemy_ships(gamemessage)
-        if len(enemy_ships) > 0:
+        try:
             alive_ships = list(filter(lambda ship: ship.currentHealth > 0, enemy_ships))
             ship_with_minimal_health = alive_ships.sort(key=lambda ship: ship.currentHealth)[0]
             return ship_with_minimal_health
-        else:
+        except:
             return Vector(0, 0)
 
     def find_enemy_ships(self, gamemessage: GameMessage) -> list[Ship]:
