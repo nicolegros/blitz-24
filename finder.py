@@ -31,10 +31,10 @@ class Finder:
     def find_enemy_ships_without_radar(self, gamemessage: GameMessage) -> list[Vector]:
         print("Finding ships without radar")
         ships = []
-        my_ship_id = gamemessage.ships.get(gamemessage.currentTeamId)
-        enemy_ships_ids = [shipId for shipId in gamemessage.shipsPositions.keys() if shipId != my_ship_id]
+        my_ship = gamemessage.ships.get(gamemessage.currentTeamId)
+        enemy_ships_ids = [shipId for shipId in gamemessage.shipsPositions.keys() if shipId != my_ship.teamId]
         for ship_id in enemy_ships_ids:
-            if ship_id != my_ship_id:
+            if ship_id != my_ship.teamId:
                 ships.append(gamemessage.shipsPositions.get(ship_id))
 
         return ships
