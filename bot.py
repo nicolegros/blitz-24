@@ -3,24 +3,29 @@ from game_message import *
 from actions import *
 import random
 
+from turrets import Turrets
+
+
 class Bot:
     def __init__(self):
         print("Initializing your super mega duper bot")
         self.finder = Finder()
-
+        self.turrets = Turrets()
 
     def get_next_move(self, game_message: GameMessage):
         """
         Here is where the magic happens, for now the moves are not very good. I bet you can do better ;)
         """
         actions = []
+        self.turrets.load(game_message)
 
         team_id = game_message.currentTeamId
         my_ship = game_message.ships.get(team_id)
         other_ships_ids = [shipId for shipId in game_message.shipsPositions.keys() if shipId != team_id]
 
         # Find who's not doing anything and try to give them a job?
-        idle_crewmates = [crewmate for crewmate in my_ship.crew if crewmate.currentStation is None and crewmate.destination is None]
+        idle_crewmates = [crewmate for crewmate in my_ship.crew if
+                          crewmate.currentStation is None and crewmate.destination is None]
 
         for crewmate in idle_crewmates:
             visitable_stations = crewmate.distanceFromStations.shields + crewmate.distanceFromStations.turrets + crewmate.distanceFromStations.helms + crewmate.distanceFromStations.radars
@@ -32,18 +37,12 @@ class Bot:
         for turret_station in operatedTurretStations:
             position = self.finder.find_enemy_position(game_message)
             print(f"POS: {position}")
-            possible_actions = [
-                # Charge the turret.
-                TurretChargeAction(turret_station.id),
-                # Aim the turret itself.
-                TurretLookAtAction(turret_station.id,
-                                   position
-                ),
-                # Shoot!
-                TurretShootAction(turret_station.id)
-            ]
-
-            actions.append(random.choice(possible_actions))
+            if self.turrets.isready(turret_station.id):
+                actions.append(TurretShootAction(turret_station.id))
+            else:
+                actions.append(TurretLookAtAction(turret_station.id,
+                                                  position))
+                self.turrets.lockin(turret_station.id)
 
         # operatedHelmStation = [station for station in my_ship.stations.helms if station.operator is not None]
         # if operatedHelmStation:
@@ -55,4 +54,3 @@ class Bot:
 
         # You can clearly do better than the random actions above! Have fun!
         return actions
-
