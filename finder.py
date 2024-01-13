@@ -31,7 +31,7 @@ class Finder:
             return l
         except:
             self.logger.error("Failed to find enemies!")
-            return []
+            return self.find_enemy_ships_without_radar(gamemessage)
 
     def find_enemy_ships_without_radar(self, gamemessage: GameMessage) -> list[Vector]:
         print("Finding ships without radar")
