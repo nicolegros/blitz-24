@@ -24,6 +24,7 @@ class Bot:
             "radar": False,
             "shield": False
         }
+        self.criticalshields = []
 
     def get_next_move(self, game_message: GameMessage):
         """
@@ -47,6 +48,16 @@ class Bot:
             shield = self.findshield(game_message)
             self.addaction(CrewMoveAction(shield_reparator.id, shield.gridPosition))
             self.turrets_to_go.append(shield.id)
+
+        if self.iscritical(game_message):
+            print("Damage critical: All to the shields!")
+            for crewmate in my_ship.crew:
+                if len(self.findshipshield(crewmate.currentStation)) < 1:
+                    shield = self.findshield(game_message)
+                    if shield is not None:
+                        self.addaction(CrewMoveAction(crewmate.id, shield.gridPosition))
+                        self.turrets_to_go.append(shield.id)
+                        self.criticalshields.append(shield.id)
 
         # Find who's not doing anything and try to give them a job?
         idle_crewmates = [crewmate for crewmate in my_ship.crew if
@@ -137,9 +148,19 @@ class Bot:
         # return myship.currentShield < 0.25 * gamemessage.constants.ship.maxShield
         return myship.currentShield < -1
 
-    def findshield(self, gamemessage: GameMessage) -> Station:
+    def iscritical(self, gamemessage) -> bool:
         myship = self.get_my_ship(gamemessage)
-        return myship.stations.shields[0]
+        return myship.currentHealth < gamemessage.constants.ship.maxHealth * 0.20
+
+    def findshield(self, gamemessage: GameMessage) -> Station | None:
+        myship = self.get_my_ship(gamemessage)
+        try:
+            selectedshield = list(filter(lambda shield: shield.id not in self.criticalshields, myship.stations.shields ))[0]
+            return selectedshield
+        except:
+            print("No more shields")
+            return None
+
 
     def getStationsOfType(self, stationType, gamemessage: GameMessage, crewmate: CrewMember) -> tuple[list[CrewDistance], list[Station]]:
         myship = self.get_my_ship(gamemessage)
@@ -165,3 +186,12 @@ class Bot:
             self.turrets_to_go.append(station_to_move_to.stationId)
             self.addaction(CrewMoveAction(crewmate.id, station_to_move_to.stationPosition))
             self.crew_roles[stationtype] = True
+
+    def findshipstation(self, stationid: str) -> Station:
+        ship = self.get_my_ship(self.gamemessage)
+        allstations = ship.stations.turrets + ship.stations.helms + ship.stations.radars + ship.stations.shields
+        return list(filter(lambda station: station.id == stationid, allstations))[0]
+
+    def findshipshield(self, stationid: str) -> list[Station]:
+        ship = self.get_my_ship(self.gamemessage)
+        return list(filter(lambda station: station.id == stationid, ship.stations.shields))
