@@ -1,6 +1,10 @@
+import game_message
 from game_message import *
 from actions import *
 import random
+
+from system_defense import get_othogonal_max_radius_position, get_time_until_collision_from_center_of_debris
+
 
 class Bot:
     def __init__(self):
@@ -11,6 +15,17 @@ class Bot:
         """
         Here is where the magic happens, for now the moves are not very good. I bet you can do better ;)
         """
+        if len(game_message.debris):
+            for debris in game_message.debris:
+                # print('debris_orthogonal')
+                # print(get_othogonal_max_radius_position(debris))
+
+
+                t, _ = get_time_until_collision_from_center_of_debris(game_message.shipsPositions[game_message.currentTeamId], debris, game_message.constants.ship.stations.shield.shieldRadius)
+                if t is not None:
+                    print('time to hit')
+                    print(t)
+
         actions = []
         team_id = game_message.currentTeamId
         my_ship = game_message.ships.get(team_id)
