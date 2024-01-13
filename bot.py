@@ -1,3 +1,4 @@
+from finder import Finder
 from game_message import *
 from actions import *
 import random
@@ -5,6 +6,7 @@ import random
 class Bot:
     def __init__(self):
         print("Initializing your super mega duper bot")
+        self.finder = Finder()
 
 
     def get_next_move(self, game_message: GameMessage):
@@ -33,7 +35,7 @@ class Bot:
                 TurretChargeAction(turret_station.id),
                 # Aim the turret itself.
                 TurretLookAtAction(turret_station.id, 
-                                   Vector(random.uniform(0, game_message.constants.world.width), random.uniform(0, game_message.constants.world.height))
+                                   self.finder.find_enemy_position(game_message)
                 ),
                 # Shoot!
                 TurretShootAction(turret_station.id)
@@ -41,9 +43,9 @@ class Bot:
 
             actions.append(random.choice(possible_actions))
 
-        operatedHelmStation = [station for station in my_ship.stations.helms if station.operator is not None]
-        if operatedHelmStation:
-            actions.append(ShipRotateAction(random.uniform(0, 360)))
+        # operatedHelmStation = [station for station in my_ship.stations.helms if station.operator is not None]
+        # if operatedHelmStation:
+        #     actions.append(ShipRotateAction(random.uniform(0, 360)))
 
         operatedRadarStation = [station for station in my_ship.stations.radars if station.operator is not None]
         for radar_station in operatedRadarStation:
@@ -51,3 +53,4 @@ class Bot:
 
         # You can clearly do better than the random actions above! Have fun!
         return actions
+
