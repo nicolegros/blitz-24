@@ -30,12 +30,14 @@ class Bot:
         # Now crew members at stations should do something!
         operatedTurretStations = [station for station in my_ship.stations.turrets if station.operator is not None]
         for turret_station in operatedTurretStations:
+            position = self.finder.find_enemy_position(game_message)
+            print(f"Shooting ship at {position}")
             possible_actions = [
                 # Charge the turret.
                 TurretChargeAction(turret_station.id),
                 # Aim the turret itself.
-                TurretLookAtAction(turret_station.id, 
-                                   self.finder.find_enemy_position(game_message)
+                TurretLookAtAction(turret_station.id,
+                                   position
                 ),
                 # Shoot!
                 TurretShootAction(turret_station.id)
