@@ -100,7 +100,37 @@ class Bot:
         operatedHelmStation = [station for station in my_ship.stations.helms if station.operator is not None]
         # if operatedHelmStation and not self.hasrotated:
         if operatedHelmStation:
-            self.addaction(ShipLookAtAction(self.finder.find_enemy_position(game_message)))
+            enemy_position_to_attack = self.finder.find_enemy_position(game_message)
+            print('-'*100)
+            print(enemy_position_to_attack)
+            found_turret = False
+            for turret in operatedTurretStations:
+                if turret.turretType is TurretType.Fast or turret.turretType is TurretType.Cannon or turret.turretType is TurretType.Sniper:
+                    found_turret = True
+                    turret_angle = turret.orientationDegrees
+                    ship_position = myship.worldPosition
+                    x_diff = enemy_position_to_attack.x - ship_position.x
+                    y_diff = enemy_position_to_attack.y - ship_position.y
+
+                    add_angle = 0
+                    if x_diff < 0 and y_diff > 0 or x_diff < 0 and y_diff < 0:
+                        add_angle = np.pi
+
+                    angle_to_have_to_hit_enemy = np.arctan(y_diff/x_diff) * np.sign(y_diff / x_diff) + add_angle
+
+                    angle_to_move = angle_to_have_to_hit_enemy - turret_angle
+                    angle_to_move = angle_to_move / (2*np.pi)*360
+
+                    add_addaction = ShipRotateAction(angle_to_move)
+
+                    if turret.turretType is TurretType.Fast:
+                        self.addaction(add_addaction)
+                        break
+
+            if found_turret:
+                self.addaction(add_addaction)
+
+
             self.hasrotated = True
 
         operatedRadarStation = [station for station in my_ship.stations.radars if station.operator is not None]
