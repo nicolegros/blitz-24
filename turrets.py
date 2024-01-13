@@ -18,4 +18,11 @@ class Turrets:
         }
 
     def isready(self, turretid: str) -> bool:
-        return self.turrets[turretid]["lockedIn"]
+        try:
+            ready = self.turrets[turretid]["lockedIn"]
+        except:
+            return False
+        return ready
+
+    def releaseall(self):
+        self.turrets = {}

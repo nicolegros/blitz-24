@@ -1,9 +1,14 @@
+import numpy as np
+
 from finder import Finder
 from game_message import *
 from actions import *
 import random
 
+from system_defense import will_meteor_hit, get_position_for_collision
 from turrets import Turrets
+
+LMBDA = 0.9
 
 
 class Bot:
@@ -37,7 +42,8 @@ class Bot:
                 crewmate.distanceFromStations.helms
             ]:
                 crew_stations = stations_list
-                unoccupied_ship_stations = [station.id for station in my_ship.stations.turrets if station.operator is None and station.id not in turrets_to_go]
+                unoccupied_ship_stations = [station.id for station in my_ship.stations.turrets if
+                                            station.operator is None and station.id not in turrets_to_go]
                 l = list(filter(lambda turret: turret.stationId in unoccupied_ship_stations, crew_stations))
                 if len(l) < 1:
                     pass
@@ -48,8 +54,25 @@ class Bot:
 
         # Now crew members at stations should do something!
         operatedTurretStations = [station for station in my_ship.stations.turrets if station.operator is not None]
+        myship = self.get_my_ship(game_message)
+        # isdefense = myship.currentShield < 0.25 * game_message.constants.ship.maxShield
+        isdefense = myship.currentShield < -1
+        if isdefense:
+            debrises, actualized_damaged = self.calculate_defense(game_message)
+
         for turret_station in operatedTurretStations:
-            position = self.finder.find_enemy_position(game_message)
+            # Defense
+            if isdefense and actualized_damaged:
+                self.turrets.releaseall()
+                debris_to_shoot = debrises[np.argmax(np.array(actualized_damaged))]
+                position, _, _, _ = get_position_for_collision(game_message.constants.ship,
+                                                                      debris_to_shoot.position.x,
+                                                                      turret_station,
+                                                                      debris_to_shoot)
+            # Attack
+            else:
+                position = self.finder.find_enemy_position(game_message)
+
             print(f"POS: {position}")
             if self.turrets.isready(turret_station.id):
                 self.addaction(TurretShootAction(turret_station.id))
@@ -72,3 +95,21 @@ class Bot:
     def addaction(self, action):
         print(f"Adding action: {action}")
         self.actions.append(action)
+
+    def get_my_ship(self, gamemessage: GameMessage) -> Ship:
+        team_id = gamemessage.currentTeamId
+        return gamemessage.ships.get(team_id)
+
+    def calculate_defense(self, game_message):
+        myship = self.get_my_ship(game_message)
+        actualized_damaged = []
+        debrises = []
+        for debris in game_message.debris:
+            willhit, _, time = will_meteor_hit(myship.worldPosition,
+                                               debris,
+                                               game_message.constants.ship.stations.shield.shieldRadius)
+            if willhit:
+                debrises.append(debris)
+                actualized_damaged.append(debris.damage * LMBDA ** time)
+
+        return debrises, actualized_damaged
