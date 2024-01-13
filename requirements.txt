@@ -1,3 +1,4 @@
 websockets~=10.3
 cattrs~=22.2.0
 numpy~=1.26.3
+scipy~=1.11.4
