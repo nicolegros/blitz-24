@@ -29,26 +29,27 @@ class Bot:
         my_ship = game_message.ships.get(team_id)
         other_ships_ids = [shipId for shipId in game_message.shipsPositions.keys() if shipId != team_id]
 
+        turrets_to_go = []
+        shield_reparator_id = ""
+
+        if self.isdefense(game_message):
+            shield_reparator = my_ship.crew[0]
+            shield_reparator_id = shield_reparator.id
+            shield = self.findshield(game_message)
+            self.addaction(CrewMoveAction(shield_reparator.id, shield.gridPosition))
+            turrets_to_go.append(shield.id)
+
         # Find who's not doing anything and try to give them a job?
         idle_crewmates = [crewmate for crewmate in my_ship.crew if
-                          crewmate.currentStation is None and crewmate.destination is None]
-        turrets_to_go = []
+                          crewmate.currentStation is None and crewmate.destination is None and crewmate.id != shield_reparator_id]
 
         for crewmate in idle_crewmates:
-            if self.isdefense(game_message):
-                stations_in_order = [
-                    crewmate.distanceFromStations.shields,
-                    crewmate.distanceFromStations.turrets,
-                    crewmate.distanceFromStations.radars,
-                    crewmate.distanceFromStations.helms
-                ]
-            else:
-                stations_in_order = [
-                    crewmate.distanceFromStations.turrets,
-                    crewmate.distanceFromStations.radars,
-                    crewmate.distanceFromStations.shields,
-                    crewmate.distanceFromStations.helms
-                ]
+            stations_in_order = [
+                crewmate.distanceFromStations.turrets,
+                crewmate.distanceFromStations.radars,
+                crewmate.distanceFromStations.shields,
+                crewmate.distanceFromStations.helms
+            ]
             for stations_list in stations_in_order:
                 crew_stations = stations_list
                 unoccupied_ship_stations = [station.id for station in my_ship.stations.turrets if
@@ -122,3 +123,7 @@ class Bot:
         myship = self.get_my_ship(gamemessage)
         # return myship.currentShield < 0.25 * gamemessage.constants.ship.maxShield
         return myship.currentShield < -1
+
+    def findshield(self, gamemessage: GameMessage) -> Station:
+        myship = self.get_my_ship(gamemessage)
+        return myship.stations.shields[0]
