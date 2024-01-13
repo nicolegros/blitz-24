@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 
 from finder import Finder
@@ -30,6 +32,7 @@ class Bot:
         """
         Here is where the magic happens, for now the moves are not very good. I bet you can do better ;)
         """
+
         self.actions = []
         self.turrets.load(game_message)
         self.gamemessage = game_message
@@ -91,6 +94,7 @@ class Bot:
         operatedHelmStation = [station for station in my_ship.stations.helms if station.operator is not None]
         # if operatedHelmStation and not self.hasrotated:
         if operatedHelmStation:
+            myship = self.get_my_ship(game_message)
             enemy_position_to_attack = self.finder.find_enemy_position(game_message)
             print('-'*100)
             print(enemy_position_to_attack)
@@ -116,6 +120,7 @@ class Bot:
 
                     if turret.turretType is TurretType.Fast:
                         self.addaction(add_addaction)
+                        print(f'angletomove: {angle_to_move}')
                         break
 
             if found_turret:
@@ -162,7 +167,7 @@ class Bot:
         myship = self.get_my_ship(gamemessage)
         return myship.currentHealth < gamemessage.constants.ship.maxHealth * 0.20
 
-    def findshield(self, gamemessage: GameMessage) -> Station | None:
+    def findshield(self, gamemessage: GameMessage) -> Optional[Station]:
         myship = self.get_my_ship(gamemessage)
         try:
             selectedshield = list(filter(lambda shield: shield.id not in self.criticalshields, myship.stations.shields ))[0]
